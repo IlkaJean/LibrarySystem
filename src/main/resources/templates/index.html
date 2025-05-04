@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Library Management System</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-primary text-white py-5 mb-4">
+        <div class="container">
+            <h1 class="display-4">Welcome to Our Library</h1>
+            <p class="lead">Manage your reading journey with our comprehensive library management system.</p>
+            <hr class="my-4">
+            <p>Browse through our vast collection of books, reserve study rooms, and stay updated with our events.</p>
+            <div class="mt-4">
+                <a class="btn btn-outline-light btn-lg" href="/books" role="button">Browse Books</a>
+                <a class="btn btn-outline-light btn-lg" href="/events" role="button">View Events</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Quick Stats -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-book"></i> Total Books</h5>
+                        <h2 class="card-text" th:text="${totalBooks}">Loading...</h2>
+                        <a href="/books" class="btn btn-primary">Browse Catalog</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-book-open"></i> Available Books</h5>
+                        <h2 class="card-text" th:text="${availableBooks}">Loading...</h2>
+                        <a href="/books/available" class="btn btn-primary">View Available</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-calendar"></i> Upcoming Events</h5>
+                        <h2 class="card-text" th:text="${upcomingEvents}">Loading...</h2>
+                        <a href="/events/upcoming" class="btn btn-primary">See All Events</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Books -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="mb-4">Featured Books</h2>
+                <div class="row" th:if="${featuredBooks}">
+                    <div class="col-md-3 mb-4" th:each="book : ${featuredBooks}">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${book.name}">Book Title</h5>
+                                <p class="card-text text-muted" th:text="${book.authorNames}">Author Name</p>
+                                <p class="card-text">
+                                    <span class="badge bg-primary" th:text="${book.topic?.name}">Topic</span>
+                                </p>
+                                <p class="card-text">
+                                    Available: <span th:text="${book.availableCopyCount}">0</span> /
+                                    <span th:text="${book.totalCopyCount}">0</span>
+                                </p>
+                                <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="row mt-5" th:if="${recentEvents}">
+            <div class="col-12">
+                <h2 class="mb-4">Recent Events</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="event : ${recentEvents}">
+                            <td th:text="${event.name}">Event Name</td>
+                            <td>
+                                        <span th:text="${event.eventType == 'E' ? 'Exhibition' : 'Seminar'}"
+                                              class="badge"
+                                              th:classappend="${event.eventType == 'E' ? 'bg-info' : 'bg-success'}">
+                                            Type
+                                        </span>
+                            </td>
+                            <td th:text="${#temporals.format(event.startDateTime, 'dd/MM/yyyy HH:mm')}">Date</td>
+                            <td>
+                                        <span th:text="${event.status}"
+                                              class="badge"
+                                              th:classappend="${event.status == 'active' ? 'bg-success' : (event.status == 'upcoming' ? 'bg-primary' : 'bg-secondary')}">
+                                            Status
+                                        </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-sm btn-outline-primary">
+                                    View Details
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Login - Library Management System</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Login</h2>
+
+                        <!-- Login Error Alert -->
+                        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                            Invalid username or password.
+                        </div>
+
+                        <!-- Logout Success Alert -->
+                        <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                            You have been logged out successfully.
+                        </div>
+
+                        <form th:action="@{/api/auth/signin}" method="post" id="loginForm">
+                            <div class="mb-3">
+                                <label for="usernameOrEmail" class="form-label">Username or Email</label>
+                                <input type="text" class="form-control" id="usernameOrEmail" name="usernameOrEmail" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <p>Don't have an account? <a href="/register">Register here</a></p>
+                            <p><a href="/forgot-password">Forgot password?</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="extra-js">
+    <script>
+            $(document).ready(function() {
+                $('#loginForm').on('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = {
+                        usernameOrEmail: $('#usernameOrEmail').val(),
+                        password: $('#password').val()
+                    };
+
+                    $.ajax({
+                        url: '/api/auth/signin',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function(response) {
+                            // Store JWT token
+                            localStorage.setItem('token', response.accessToken);
+
+                            // Redirect based on user role
+                            if (response.roles.includes('ROLE_ADMIN')) {
+                                window.location.href = '/admin';
+                            } else if (response.roles.includes('ROLE_EMPLOYEE')) {
+                                window.location.href = '/dashboard';
+                            } else {
+                                window.location.href = '/';
+                            }
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Login failed');
+                        }
+                    });
+                });
+            });
+        </script>
+</th:block>
+</body>
+</html>
