@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title>Add Book - Library Management System</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Add New Book</h2>
+                <a href="/books" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Books
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="bookForm" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Book Title</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="invalid-feedback">
+                                    Please provide a book title.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="topicId" class="form-label">Topic</label>
+                                <select class="form-select" id="topicId" name="topicId" required>
+                                    <option value="">Select a topic</option>
+                                    <option th:each="topic : ${topics}" th:value="${topic.id}" th:text="${topic.name}">
+                                        Topic Name
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a topic.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Authors</label>
+                            <div class="row" id="authorSelection">
+                                <div class="col-md-12">
+                                    <select class="form-select" id="authorIds" multiple required>
+                                        <option th:each="author : ${authors}" th:value="${author.id}" 
+                                                th:text="${author.fullName}">
+                                            Author Name
+                                        </option>
+                                    </select>
+                                    <div class="form-text">Hold Ctrl/Cmd to select multiple authors</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="copies" class="form-label">Number of Copies</label>
+                            <input type="number" class="form-control" id="copies" name="copies" value="1" min="1" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid number of copies.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary me-md-2">
+                                <i class="fas fa-save"></i> Save Book
+                            </button>
+                            <a href="/books" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-js">
+        <script>
+            $(document).ready(function() {
+                // Initialize form validation
+                const form = document.getElementById('bookForm');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const selectedAuthors = Array.from(document.getElementById('authorIds').selectedOptions)
+                        .map(option => option.value);
+                    
+                    const bookData = {
+                        name: document.getElementById('name').value,
+                        topicId: document.getElementById('topicId').value,
+                        authorIds: selectedAuthors
+                    };
+                    
+                    const copies = parseInt(document.getElementById('copies').value);
+                    
+                    // Create book
+                    $.ajax({
+                        url: '/api/books',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(bookData),
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function(response) {
+                            // Create copies
+                            createCopies(response.id, copies);
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Failed to add book');
+                        }
+                    });
+                });
+            });
+            
+            function createCopies(bookId, count) {
+                let copiesCreated = 0;
+                
+                function createCopy() {
+                    $.ajax({
+                        url: '/api/books/' + bookId + '/copies',
+                        type: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function() {
+                            copiesCreated++;
+                            if (copiesCreated < count) {
+                                createCopy();
+                            } else {
+                                alert('Book added successfully with ' + count + ' copies');
+                                window.location.href = '/books';
+                            }
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert('Book added but failed to create copy ' + (copiesCreated + 1));
+                            window.location.href = '/books';
+                        }
+                    });
+                }
+                
+                if (count > 0) {
+                    createCopy();
+                } else {
+                    alert('Book added successfully');
+                    window.location.href = '/books';
+                }
+            }
+        </script>
+    </th:block>
+</body>
+</html>

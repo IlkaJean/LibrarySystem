@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title>Rental Details - Library Management System</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Rental #<span th:text="${rental.id}">R001</span></h2>
+                <div>
+                    <a href="/rentals" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Rentals
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Rental Information</h5>
+                            <table class="table">
+                                <tr>
+                                    <th width="30%">Rental ID:</th>
+                                    <td th:text="${rental.id}">R001</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <span th:text="${rental.status}" 
+                                              class="badge"
+                                              th:classappend="${rental.status == 'Borrowed' ? 'bg-primary' : 
+                                                             (rental.status == 'Returned' ? 'bg-success' : 
+                                                             (rental.status == 'Late' ? 'bg-warning' : 'bg-danger'))}">
+                                            Status
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Borrow Date:</th>
+                                    <td th:text="${#temporals.format(rental.borrowDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                </tr>
+                                <tr>
+                                    <th>Expected Return Date:</th>
+                                    <td>
+                                        <span th:text="${#temporals.format(rental.expectedReturnDate, 'dd/MM/yyyy')}">15/01/2024</span>
+                                        <span th:if="${rental.overdue}" class="badge bg-danger ms-2">
+                                            Overdue by <span th:text="${rental.daysOverdue}">5</span> days
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${rental.actualReturnDate != null}">
+                                    <th>Actual Return Date:</th>
+                                    <td th:text="${#temporals.format(rental.actualReturnDate, 'dd/MM/yyyy')}">16/01/2024</td>
+                                </tr>
+                                <tr th:if="${rental.lateFee > 0}">
+                                    <th>Late Fee:</th>
+                                    <td>
+                                        $<span th:text="${#numbers.formatDecimal(rental.lateFee, 1, 2)}">5.00</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="card mb-4" th:if="${rental.status == 'Borrowed'}">
+                        <div class="card-body">
+                            <h5 class="card-title">Actions</h5>
+                            <div class="d-flex gap-2">
+                                <button sec:authorize="hasAnyRole('ADMIN', 'EMPLOYEE')" 
+                                        class="btn btn-success"
+                                        th:onclick="'returnRental(' + ${rental.id} + ')'">
+                                    <i class="fas fa-check"></i> Return Book
+                                </button>
+                                <button sec:authorize="hasAnyRole('ADMIN', 'EMPLOYEE')" 
+                                        class="btn btn-danger"
+                                        th:onclick="'markAsLost(' + ${rental.id} + ')'">
+                                    <i class="fas fa-exclamation-circle"></i> Mark as Lost
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Customer Information -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Customer</h5>
+                            <p class="mb-2">
+                                <strong>ID:</strong> <span th:text="${rental.customerId}">C001</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong>Name:</strong> <span th:text="${rental.customerName}">Customer Name</span>
+                            </p>
+                            <a th:href="@{/customers/{id}(id=${rental.customerId})}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-user"></i> View Customer
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Book Information -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Book</h5>
+                            <p class="mb-2">
+                                <strong>ID:</strong> <span th:text="${rental.bookId}">B001</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong>Title:</strong> <span th:text="${rental.bookName}">Book Title</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong>Authors:</strong> <span th:text="${rental.bookAuthors}">Author Name</span>
+                            </p>
+                            <a th:href="@{/books/{id}(id=${rental.bookId})}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-book"></i> View Book
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Invoice Information -->
+                    <div class="card mb-4" th:if="${rental.invoiceId != null}">
+                        <div class="card-body">
+                            <h5 class="card-title">Invoice</h5>
+                            <p class="mb-2">
+                                <strong>Invoice ID:</strong> <span th:text="${rental.invoiceId}">I001</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong>Amount:</strong> $<span th:text="${#numbers.formatDecimal(rental.invoiceAmount, 1, 2)}">5.00</span>
+                            </p>
+                            <a th:href="@{/invoices/{id}(id=${rental.invoiceId})}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-invoice"></i> View Invoice
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-js">
+        <script>
+            function returnRental(rentalId) {
+                $.ajax({
+                    url: '/api/rentals/' + rentalId + '/return',
+                    type: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function() {
+                        alert('Rental returned successfully');
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        const response = xhr.responseJSON;
+                        alert(response.message || 'Failed to return rental');
+                    }
+                });
+            }
+            
+            function markAsLost(rentalId) {
+                if (confirm('Are you sure you want to mark this rental as lost?')) {
+                    $.ajax({
+                        url: '/api/rentals/' + rentalId + '/mark-lost',
+                        type: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function() {
+                            alert('Rental marked as lost');
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Failed to mark rental as lost');
+                        }
+                    });
+                }
+            }
+        </script>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Edit Customer - Library Management System</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Edit Customer</h2>
+                <a href="/customers" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Customers
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="customerForm" class="needs-validation" novalidate>
+                        <input type="hidden" id="customerId" th:value="${customer.id}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" 
+                                       th:value="${customer.firstName}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a first name.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" 
+                                       th:value="${customer.lastName}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a last name.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       th:value="${customer.email}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid email.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       th:value="${customer.phone}" pattern="[0-9\-]+" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid phone number.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="idType" class="form-label">ID Type</label>
+                                <select class="form-select" id="idType" name="idType" required>
+                                    <option value="">Select ID Type</option>
+                                    <option value="Passport" th:selected="${customer.idType == 'Passport'}">Passport</option>
+                                    <option value="SSN" th:selected="${customer.idType == 'SSN'}">SSN</option>
+                                    <option value="Driver License" th:selected="${customer.idType == 'Driver License'}">Driver License</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select an ID type.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="idNumber" class="form-label">ID Number</label>
+                                <input type="text" class="form-control" id="idNumber" name="idNumber" 
+                                       th:value="${customer.idNumber}" required>
+                                <div class="invalid-feedback">
+                                    Please provide an ID number.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary me-md-2">
+                                <i class="fas fa-save"></i> Update Customer
+                            </button>
+                            <a href="/customers" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-js">
+        <script>
+            $(document).ready(function() {
+                // Initialize form validation
+                const form = document.getElementById('customerForm');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const customerData = {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value,
+                        idType: document.getElementById('idType').value,
+                        idNumber: document.getElementById('idNumber').value
+                    };
+                    
+                    const customerId = document.getElementById('customerId').value;
+                    
+                    $.ajax({
+                        url: '/api/customers/' + customerId,
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(customerData),
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function() {
+                            alert('Customer updated successfully');
+                            window.location.href = '/customers';
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Failed to update customer');
+                        }
+                    });
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

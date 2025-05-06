@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Create Rental - Library Management System</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Create New Rental</h2>
+                <a href="/rentals" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Rentals
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="rentalForm" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="customerSearch" class="form-label">Customer</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="customerSearch" 
+                                           placeholder="Search by name, email, or ID">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="searchCustomers()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="customerId" required>
+                                <div class="invalid-feedback">
+                                    Please select a customer.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="bookSearch" class="form-label">Book</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="bookSearch" 
+                                           placeholder="Search by title, author, or ID">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="searchBooks()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="bookCopyId" required>
+                                <div class="invalid-feedback">
+                                    Please select a book copy.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Selection Modal -->
+                        <div class="modal fade" id="customerModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Select Customer</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Active Rentals</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customerResults">
+                                                <!-- Results populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Book Selection Modal -->
+                        <div class="modal fade" id="bookModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Select Book</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Title</th>
+                                                    <th>Authors</th>
+                                                    <th>Available Copies</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="bookResults">
+                                                <!-- Results populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary me-md-2">
+                                <i class="fas fa-check"></i> Create Rental
+                            </button>
+                            <a href="/rentals" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-js">
+        <script>
+            let customerModal;
+            let bookModal;
+            
+            $(document).ready(function() {
+                customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+                bookModal = new bootstrap.Modal(document.getElementById('bookModal'));
+                
+                // Form validation
+                const form = document.getElementById('rentalForm');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const customerId = document.getElementById('customerId').value;
+                    const bookCopyId = document.getElementById('bookCopyId').value;
+                    
+                    $.ajax({
+                        url: '/api/rentals?customerId=' + customerId + '&bookCopyId=' + bookCopyId,
+                        type: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function() {
+                            alert('Rental created successfully');
+                            window.location.href = '/rentals';
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Failed to create rental');
+                        }
+                    });
+                });
+            });
+            
+            function searchCustomers() {
+                const keyword = document.getElementById('customerSearch').value;
+                $.ajax({
+                    url: '/api/customers/search?keyword=' + encodeURIComponent(keyword),
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function(response) {
+                        const tbody = document.getElementById('customerResults');
+                        tbody.innerHTML = '';
+                        
+                        response.content.forEach(customer => {
+                            const row = `
+                                <tr>
+                                    <td>${customer.id}</td>
+                                    <td>${customer.firstName} ${customer.lastName}</td>
+                                    <td>${customer.email}</td>
+                                    <td>${customer.activeRentals}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" 
+                                                onclick="selectCustomer(${customer.id}, '${customer.firstName} ${customer.lastName}')">
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.innerHTML += row;
+                        });
+                        
+                        customerModal.show();
+                    },
+                    error: function(xhr) {
+                        alert('Failed to search customers');
+                    }
+                });
+            }
+            
+            function selectCustomer(id, name) {
+                document.getElementById('customerId').value = id;
+                document.getElementById('customerSearch').value = name;
+                customerModal.hide();
+            }
+            
+            function searchBooks() {
+                const keyword = document.getElementById('bookSearch').value;
+                $.ajax({
+                    url: '/api/books/search?keyword=' + encodeURIComponent(keyword),
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function(response) {
+                        const tbody = document.getElementById('bookResults');
+                        tbody.innerHTML = '';
+                        
+                        response.content.forEach(book => {
+                            const row = `
+                                <tr>
+                                    <td>${book.id}</td>
+                                    <td>${book.name}</td>
+                                    <td>${Array.from(book.authorNames).join(', ')}</td>
+                                    <td>${book.availableCopies}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" 
+                                                onclick="selectBook(${book.id}, '${book.name}')"
+                                                ${book.availableCopies > 0 ? '' : 'disabled'}>
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.innerHTML += row;
+                        });
+                        
+                        bookModal.show();
+                    },
+                    error: function(xhr) {
+                        alert('Failed to search books');
+                    }
+                });
+            }
+            
+            function selectBook(bookId, name) {
+                // Find available copy for this book
+                $.ajax({
+                    url: '/api/books/available-copies?bookId=' + bookId,
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function(copies) {
+                        if (copies.length > 0) {
+                            document.getElementById('bookCopyId').value = copies[0].id;
+                            document.getElementById('bookSearch').value = name;
+                            bookModal.hide();
+                        } else {
+                            alert('No available copies for this book');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Failed to get available copies');
+                    }
+                });
+            }
+        </script>
+    </th:block>
+</body>
+</html>

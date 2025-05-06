@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}">
+<head>
+    <title th:text="${customer.firstName + ' ' + customer.lastName + ' - Customer Details'}">Customer Details</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 th:text="${customer.firstName + ' ' + customer.lastName}">Customer Name</h2>
+                <div>
+                    <a sec:authorize="hasAnyRole('ADMIN', 'EMPLOYEE')" 
+                       th:href="@{/customers/{id}/edit(id=${customer.id})}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="/customers" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Customers
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Customer Information</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>ID:</th>
+                                    <td th:text="${customer.id}">C001</td>
+                                </tr>
+                                <tr>
+                                    <th>Name:</th>
+                                    <td th:text="${customer.firstName + ' ' + customer.lastName}">Customer Name</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td th:text="${customer.email}">email@example.com</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone:</th>
+                                    <td th:text="${customer.phone}">555-0123</td>
+                                </tr>
+                                <tr>
+                                    <th>ID Type:</th>
+                                    <td th:text="${customer.idType}">Passport</td>
+                                </tr>
+                                <tr>
+                                    <th>ID Number:</th>
+                                    <td th:text="${customer.idNumber}">P123456</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Rentals:</th>
+                                    <td th:text="${customer.totalRentals}">0</td>
+                                </tr>
+                                <tr>
+                                    <th>Active Rentals:</th>
+                                    <td>
+                                        <span th:text="${customer.activeRentals}">0</span>
+                                        <span th:if="${customer.activeRentals > 0}" class="badge bg-info ms-2">
+                                            Active
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <!-- Current Rentals -->
+                    <div class="card mb-4" th:if="${currentRentals and !currentRentals.empty}">
+                        <div class="card-body">
+                            <h5 class="card-title">Current Rentals</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Book</th>
+                                            <th>Borrowed</th>
+                                            <th>Due</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="rental : ${currentRentals}">
+                                            <td th:text="${rental.bookName}">Book Title</td>
+                                            <td th:text="${#temporals.format(rental.borrowDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            <td>
+                                                <span th:text="${#temporals.format(rental.expectedReturnDate, 'dd/MM/yyyy')}">15/01/2024</span>
+                                                <span th:if="${rental.overdue}" class="badge bg-danger ms-1">Overdue</span>
+                                            </td>
+                                            <td>
+                                                <span th:text="${rental.status}" 
+                                                      class="badge"
+                                                      th:classappend="${rental.status == 'Borrowed' ? 'bg-primary' : 'bg-warning'}">
+                                                    Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Rental History -->
+                    <div class="card mb-4" th:if="${recentRentals and !recentRentals.empty}">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Rental History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Book</th>
+                                            <th>Borrowed</th>
+                                            <th>Returned</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="rental : ${recentRentals}">
+                                            <td th:text="${rental.bookName}">Book Title</td>
+                                            <td th:text="${#temporals.format(rental.borrowDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            <td th:text="${rental.actualReturnDate != null ? #temporals.format(rental.actualReturnDate, 'dd/MM/yyyy') : '-'}">15/01/2024</td>
+                                            <td>
+                                                <span th:text="${rental.status}" 
+                                                      class="badge"
+                                                      th:classappend="${rental.status == 'Returned' ? 'bg-success' : (rental.status == 'Lost' ? 'bg-danger' : 'bg-secondary')}">
+                                                    Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

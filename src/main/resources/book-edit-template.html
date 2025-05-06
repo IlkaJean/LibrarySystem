@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Edit Book - Library Management System</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Edit Book</h2>
+                <a href="/books" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Books
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="bookForm" class="needs-validation" novalidate>
+                        <input type="hidden" id="bookId" th:value="${book.id}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Book Title</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       th:value="${book.name}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a book title.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="topicId" class="form-label">Topic</label>
+                                <select class="form-select" id="topicId" name="topicId" required>
+                                    <option value="">Select a topic</option>
+                                    <option th:each="topic : ${topics}" 
+                                            th:value="${topic.id}" 
+                                            th:text="${topic.name}"
+                                            th:selected="${topic.id == book.topicId}">
+                                        Topic Name
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a topic.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Authors</label>
+                            <div class="row" id="authorSelection">
+                                <div class="col-md-12">
+                                    <select class="form-select" id="authorIds" multiple required>
+                                        <option th:each="author : ${authors}" 
+                                                th:value="${author.id}" 
+                                                th:text="${author.fullName}"
+                                                th:selected="${#lists.contains(book.authorIds, author.id)}">
+                                            Author Name
+                                        </option>
+                                    </select>
+                                    <div class="form-text">Hold Ctrl/Cmd to select multiple authors</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Total Copies</label>
+                                <p class="form-control-plaintext" th:text="${book.totalCopyCount}">0</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Available Copies</label>
+                                <p class="form-control-plaintext" th:text="${book.availableCopyCount}">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary me-md-2">
+                                <i class="fas fa-save"></i> Update Book
+                            </button>
+                            <a href="/books" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-js">
+        <script>
+            $(document).ready(function() {
+                // Initialize form validation
+                const form = document.getElementById('bookForm');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!form.checkValidity()) {
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    
+                    const selectedAuthors = Array.from(document.getElementById('authorIds').selectedOptions)
+                        .map(option => option.value);
+                    
+                    const bookData = {
+                        name: document.getElementById('name').value,
+                        topicId: document.getElementById('topicId').value,
+                        authorIds: selectedAuthors
+                    };
+                    
+                    const bookId = document.getElementById('bookId').value;
+                    
+                    $.ajax({
+                        url: '/api/books/' + bookId,
+                        type: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(bookData),
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        success: function() {
+                            alert('Book updated successfully');
+                            window.location.href = '/books';
+                        },
+                        error: function(xhr) {
+                            const response = xhr.responseJSON;
+                            alert(response.message || 'Failed to update book');
+                        }
+                    });
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>
