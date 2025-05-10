@@ -31,6 +31,11 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public List<Author> getAllAuthors() {
+        return authorRepository.findAll();
+    }
+
+    @Override
     public Page<Author> getAllAuthors(Pageable pageable) {
         return authorRepository.findAll(pageable);
     }
@@ -42,12 +47,12 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public List<Author> getAuthorsByBook(Long bookId) {
-        return authorRepository.findByBookId(bookId);
+        return authorRepository.findByBooks_Id(bookId);
     }
 
     @Override
     public List<Author> getAuthorsBySeminar(Long seminarId) {
-        return authorRepository.findBySeminarId(seminarId);
+        return authorRepository.findBySeminarAttendances_Seminar_Id(seminarId);
     }
 
     @Override

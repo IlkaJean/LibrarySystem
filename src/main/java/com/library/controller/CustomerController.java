@@ -30,7 +30,7 @@ public class CustomerController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Customer> customers = customerService.getAllCustomers(pageable);
+        Page<Customer> customers = (Page<Customer>) customerService.getAllCustomers(pageable);
 
         return customers.map(this::convertToDto);
     }

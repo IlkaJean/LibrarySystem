@@ -34,7 +34,7 @@ public class ReservationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Reservation> reservations = reservationService.getAllReservations(pageable);
+        Page<Reservation> reservations = (Page<Reservation>) reservationService.getAllReservations(pageable);
 
         return reservations.map(this::convertToDto);
     }
@@ -110,7 +110,7 @@ public class ReservationController {
 
     @GetMapping("/active")
     public List<ReservationDto> getActiveReservations() {
-        List<Reservation> reservations = reservationService.getActiveReservations();
+        List<Reservation> reservations = (List<Reservation>) reservationService.getActiveReservations();
         return reservations.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());

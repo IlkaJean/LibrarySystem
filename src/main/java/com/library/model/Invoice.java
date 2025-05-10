@@ -35,14 +35,14 @@ public class Invoice {
     // Utility methods
     public boolean isPaid() {
         double totalPaid = payments.stream()
-                .mapToDouble(Payment::getAmount)
+                .mapToDouble(Payment::getPaymentAmount)
                 .sum();
         return totalPaid >= amount;
     }
 
     public double getBalance() {
         double totalPaid = payments.stream()
-                .mapToDouble(Payment::getAmount)
+                .mapToDouble(Payment::getPaymentAmount)
                 .sum();
         return amount - totalPaid;
     }

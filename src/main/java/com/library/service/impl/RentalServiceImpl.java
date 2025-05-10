@@ -168,7 +168,7 @@ public class RentalServiceImpl implements RentalService {
 
     @Override
     public List<Rental> getCustomerActiveRentals(Long customerId) {
-        return rentalRepository.findByCustomerIdAndStatus(customerId, "Borrowed");
+        return (List<Rental>) rentalRepository.findByCustomerIdAndStatus(customerId, "Borrowed");
     }
 
     @Override

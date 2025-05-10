@@ -19,7 +19,7 @@ public class Payment {
     private Long id;
 
     @Column(name = "PAYMENT_DATE", nullable = false)
-    private LocalDate paymentDate;
+    private java.time.LocalDate paymentDate;
 
     @Column(name = "PAY_METHOD", nullable = false)
     private String paymentMethod;
@@ -28,14 +28,35 @@ public class Payment {
     private String cardholderName;
 
     @Column(name = "PAYMENT_AMT", nullable = false)
-    private Double amount;
+    private Double paymentAmount;
+
+    public Long getId() {
+        return id;
+    }
+
+    public LocalDate getPaymentDate() {
+        return paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public String getCardholderName() {
+        return cardholderName;
+    }
+
+    public Double getPaymentAmount() {
+        return paymentAmount;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
 
     @ManyToOne
     @JoinColumn(name = "PJI_INVOICE_INVOICE_ID")
     private Invoice invoice;
 
-    // Utility method to check if cardholder name is required
-    public boolean isCardholderNameRequired() {
-        return "Credit".equals(paymentMethod) || "Debit".equals(paymentMethod);
-    }
+
 }

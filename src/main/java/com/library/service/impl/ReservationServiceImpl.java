@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -63,8 +64,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Page<Reservation> getAllReservations(Pageable pageable) {
-        return reservationRepository.findAll(pageable);
+    public List<Reservation> getAllReservations(Pageable pageable) {
+        return (List<Reservation>) reservationRepository.findAll(pageable);
     }
 
     @Override
@@ -101,8 +102,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<Reservation> getActiveReservations() {
-        return reservationRepository.findActiveReservations(LocalDateTime.now());
+    public Map<Object, Object> getActiveReservations() {
+        return (Map<Object, Object>) reservationRepository.findActiveReservations(LocalDateTime.now());
     }
 
     @Override

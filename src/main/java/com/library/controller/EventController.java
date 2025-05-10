@@ -112,7 +112,7 @@ public class EventController {
 
     @GetMapping("/upcoming")
     public List<EventDto> getUpcomingEvents() {
-        List<Event> events = eventService.getUpcomingEvents();
+        List<Event> events = (List<Event>) eventService.getUpcomingEvents();
         return events.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());

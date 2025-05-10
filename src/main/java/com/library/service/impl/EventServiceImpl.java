@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public Optional<Event> getEventById(Long id) {
         return eventRepository.findById(id);
+    }
+
+    @Override
+    public List<Event> getAllEvents() {
+        return null;
     }
 
     @Override
@@ -85,8 +91,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> getUpcomingEvents() {
-        return eventRepository.findUpcomingEvents(LocalDateTime.now());
+    public Map<Object, Object> getUpcomingEvents() {
+        return (Map<Object, Object>) eventRepository.findUpcomingEvents(LocalDateTime.now());
     }
 
     @Override

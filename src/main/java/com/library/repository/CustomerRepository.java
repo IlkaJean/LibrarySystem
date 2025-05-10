@@ -1,6 +1,8 @@
 package com.library.repository;
 
 import com.library.model.Customer;
+import com.library.model.Rental;
+import jakarta.persistence.OneToMany;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +20,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByPhone(String phone);
 
+    @OneToMany(mappedBy = "customer")
+    List<Rental> rentals = null;
+
+
     Page<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName, String lastName, Pageable pageable);
 
@@ -29,8 +35,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("SELECT c FROM Customer c JOIN c.rentals r WHERE r.status = 'Borrowed' GROUP BY c")
     List<Customer> findCustomersWithActiveRentals();
 
-    @Query("SELECT c FROM Customer c JOIN c.rentals r WHERE r.status = 'Borrowed' AND r.isOverdue() = true GROUP BY c")
+//    @Query("SELECT c FROM Customer c JOIN c.rentals r WHERE r.status = 'Borrowed' AND r.isOverdue() = true GROUP BY c")
+//    List<Customer> findCustomersWithOverdueRentals();
+    @Query("SELECT c FROM Customer c JOIN c.rentals r WHERE r.status = 'Late'")
     List<Customer> findCustomersWithOverdueRentals();
+
 
     @Query("SELECT c FROM Customer c JOIN c.rentals r GROUP BY c ORDER BY COUNT(r) DESC")
     List<Customer> findTopCustomersByRentals(Pageable pageable);

@@ -9,6 +9,8 @@ import com.library.repository.PaymentRepository;
 import com.library.repository.RentalRepository;
 import com.library.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,22 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public Optional<Invoice> getInvoiceById(Long id) {
         return invoiceRepository.findById(id);
+    }
+
+    @Override
+    public Page<Invoice> getAllInvoices(Pageable pageable) {
+        return invoiceRepository.findAll(pageable);
+    }
+
+
+    @Override
+    public Invoice updateInvoice(Long id, Invoice invoice) {
+        return null;
+    }
+
+    @Override
+    public void deleteInvoice(Long id) {
+
     }
 
     @Override
@@ -121,4 +139,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         return amount;
     }
+
+
 }
